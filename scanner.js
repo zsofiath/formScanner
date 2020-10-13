@@ -5,10 +5,10 @@ function debug_showPackage() {
     console.log(USAGE_PACKAGE);
 }
 
-let UsagePackage = function () {
-   this.userName = "";
-   this.taskId = '';
-   this.taskType = '';
+let UsagePackage = function (UserName, taskID, taskType) {
+   this.userName = UserName;
+   this.taskId = taskID;
+   this.taskType = taskType;
    this.eventList = []; //EventPackage[]
 };
 
@@ -76,7 +76,22 @@ EventPackage.prototype.setDocumentHeight = function (height) {
 
 // Content loaded
 document.addEventListener("DOMContentLoaded", function(){
-    USAGE_PACKAGE = new UsagePackage();  
+
+    var storedData = JSON.parse(localStorage.getItem("formScanner"));
+
+    if(!storedData) alert("Nem található a task adatokat, és felhasználót tároló elem a helyi tárolóban.");
+    else if(!storedData.UserName) alert("Nem található a felhasználó azonosítója a helyi tárolóban.");
+    else if(!storedData.taskID) alert("Nem található a feladat azonosítója a helyi tárolóban.");
+
+
+    var UserName = storedData.UserName;
+    var taskID = storedData.taskID;
+    var taskType = storedData.taskType;
+    USAGE_PACKAGE = new UsagePackage(
+        UserName,
+        taskID,
+        taskType
+    );  
     eddEventListenersToEveryFormElement(collectFormElements());
  });
 
@@ -112,7 +127,6 @@ document.onmousemove = function(event){
    .setScreenPosition(event.screenX, event.screenY)
    .setDocumentWidth(window.width)
    .setDocumentHeight(window.height);
-
 }
 
 // host softvare was clicked
@@ -174,10 +188,34 @@ function setFormUsagePackage(usagePackage, Elementname, eventName) {
 }
 
 function getHtmlElementName(htmlElement) {
+    console.dir(htmlElement);
     return htmlElement.attributes.formcontrolname.textContent;
 }
+
 function getHtmlElementId(htmlElement) {
-    return "TODO: get sme id";
+    console.log(getPathTo(htmlElement));
+    return getPathTo(htmlElement);
+}
+
+//https://stackoverflow.com/questions/2631820/how-do-i-ensure-saved-click-coordinates-can-be-reloaed-to-the-same-place-even-i/2631931#2631931
+function getPathTo(element) {
+    if (element.id!=='' && element.id!==undefined)
+        return 'id("'+element.id+'")';
+    if (element===document.body)
+        return element.tagName;
+    if(element.localName == "html") {
+        return "html";
+    }
+
+    var ix= 0;
+    var siblings= element.parentNode.childNodes;
+    for (var i= 0; i<siblings.length; i++) {
+        var sibling= siblings[i];
+        if (sibling===element)
+            return getPathTo(element.parentNode)+'/'+element.tagName+'['+(ix+1)+']';
+        if (sibling.nodeType===1 && sibling.tagName===element.tagName)
+            ix++;
+    }
 }
 
 function addExtraOperationsForListeners(eventName, event, htmlElement){
@@ -193,18 +231,17 @@ function addExtraOperationsForListeners(eventName, event, htmlElement){
 function handleKeyUpEvent(event, htmlElement) {
 
     if(htmlElement.value.length == 0) {
-        setUsagePackage(usagePackage, getHtmlElementName(htmlElement), "Empty")
+        setFormUsagePackage(USAGE_PACKAGE, getHtmlElementName(htmlElement), "Empty")
     } 
 
     if(event.key === "Backspace") {
-        console.log(htmlElement.value);
-        setUsagePackage(usagePackage, getHtmlElementName(htmlElement), "Backspace")
+        setFormUsagePackage(USAGE_PACKAGE, getHtmlElementName(htmlElement), "Backspace")
     }
     else if(event.key === "Delete") {
-        setUsagePackage(usagePackage, getHtmlElementName(htmlElement), "Delete")
+        setFormUsagePackage(USAGE_PACKAGE, getHtmlElementName(htmlElement), "Delete")
     }
     else {
-        setUsagePackage(usagePackage, getHtmlElementName(htmlElement), "Typing")
+        setFormUsagePackage(USAGE_PACKAGE, getHtmlElementName(htmlElement), "Typing")
     }
 }
 
