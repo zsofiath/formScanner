@@ -7,6 +7,10 @@ function debug_showPackage() {
     var formEventNameList = ["click", "blur", "change", "keyup"];
     var USAGE_PACKAGE;
 
+    if(!F0rmScnn6rEndpoint) {
+        alert("Nem található a feldolgozó végpont címe.");
+    }
+    const ENDPOINT = F0rmScnn6rEndpoint;
 
 
     let UsagePackage = function (UserName, taskID, taskType) {
@@ -260,7 +264,7 @@ function debug_showPackage() {
             document.getElementById("demo").innerHTML = this.responseText;
             }
         };
-        xhttp.open("Post", F0rmScnn6rEndpoint, true);
+        xhttp.open("Post", ENDPOINT, true);
         xhttp.send(JSON.stringify(USAGE_PACKAGE));
     }
 })();
